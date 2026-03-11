@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA//HUB — Software Quality Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff88;
+    --green-dim: #00cc66;
+    --green-dark: #004422;
+    --red: #ff3355;
+    --amber: #ffaa00;
+    --blue: #00aaff;
+    --bg: #050d0a;
+    --bg2: #0a1a12;
+    --bg3: #0f2418;
+    --border: #1a3d2a;
+    --text: #c8e6d0;
+    --text-dim: #5a8a6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,136,0.015) 2px,
+      rgba(0,255,136,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Grid background */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    background: rgba(5,13,10,0.95);
+    backdrop-filter: blur(10px);
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.4rem;
+    color: var(--green);
+    text-shadow: 0 0 20px rgba(0,255,136,0.5);
+    letter-spacing: 4px;
+  }
+
+  .logo span { color: var(--text-dim); font-weight: 400; }
+
+  .status-bar {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+    display: inline-block;
+    margin-right: 4px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  nav { display: flex; gap: 0; }
+
+  nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    padding: 0.4rem 1rem;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  nav a:hover, nav a.active {
+    color: var(--green);
+    border-color: var(--green);
+    background: rgba(0,255,136,0.05);
+    text-shadow: 0 0 10px rgba(0,255,136,0.4);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    z-index: 10;
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 6px;
+    color: var(--green-dim);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  .hero-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(0,255,136,0.3), 0 0 80px rgba(0,255,136,0.1);
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-title .slash { color: var(--text-dim); }
+
+  .hero-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+
+  .terminal-prompt {
+    display: inline-block;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.85rem;
+    color: var(--green-dim);
+    letter-spacing: 1px;
+  }
+
+  .terminal-prompt::before { content: '> '; color: var(--green); }
+
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--green);
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ===== STATS BAR ===== */
+  .stats-bar {
+    position: relative; z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat {
+    padding: 1.5rem 2rem;
+    border-right: 1px solid var(--border);
+    transition: background 0.3s;
+  }
+  .stat:hover { background: rgba(0,255,136,0.03); }
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--green);
+    text-shadow: 0 0 20px rgba(0,255,136,0.4);
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+
+  /* ===== MAIN GRID ===== */
+  .main-grid {
+    position: relative; z-index: 10;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+
+  /* ===== PANEL ===== */
+  .panel {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem;
+    transition: background 0.3s;
+  }
+  .panel:nth-child(3n) { border-right: none; }
+  .panel:hover { background: rgba(0,255,136,0.02); }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-icon {
+    width: 32px; height: 32px;
+    border: 1px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    color: var(--green);
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--green);
+    text-transform: uppercase;
+  }
+
+  .panel-tag {
+    margin-left: auto;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border: 1px solid var(--green-dark);
+    color: var(--text-dim);
+  }
+
+  /* ===== CHECKLIST ===== */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    font-size: 0.8rem;
+    color: var(--text);
+    border-bottom: 1px solid rgba(26,61,42,0.4);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .checklist li:hover { color: var(--green); }
+  .checklist li:last-child { border-bottom: none; }
+
+  .check-box {
+    width: 14px; height: 14px;
+    border: 1px solid var(--green-dim);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem;
+    color: var(--green);
+    transition: all 0.2s;
+  }
+
+  .check-box.checked { background: var(--green); color: var(--bg); }
+  .checklist li.done { color: var(--text-dim); text-decoration: line-through; }
+
+  /* ===== BUG SEVERITY MATRIX ===== */
+  .matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+  .matrix-cell {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .matrix-cell::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+
+  .matrix-cell:hover { transform: translateX(2px); }
+
+  .matrix-cell.critical::before { background: #ff3355; }
+  .matrix-cell.high::before { background: #ff6600; }
+  .matrix-cell.medium::before { background: #ffaa00; }
+  .matrix-cell.low::before { background: #00aaff; }
+
+  .matrix-cell .severity-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.25rem;
+  }
+
+  .critical .severity-label { color: #ff3355; }
+  .high .severity-label { color: #ff6600; }
+  .medium .severity-label { color: #ffaa00; }
+  .low .severity-label { color: #00aaff; }
+
+  .matrix-cell .severity-desc { color: var(--text-dim); font-size: 0.65rem; }
+
+  /* ===== CODE SNIPPET ===== */
+  .code-block {
+    background: rgba(0,255,136,0.03);
+    border: 1px solid var(--green-dark);
+    padding: 1rem;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--text-dim);
+    overflow-x: auto;
+  }
+
+  .code-block .kw { color: #ff6600; }
+  .code-block .fn { color: var(--green); }
+  .code-block .str { color: #ffaa00; }
+  .code-block .cm { color: #3a6a4a; font-style: italic; }
+  .code-block .var { color: #00aaff; }
+  .code-block .num { color: #ff88aa; }
+
+  /* ===== TEST PYRAMID ===== */
+  .pyramid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 1rem 0;
+  }
+
+  .pyramid-layer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    font-family: 'Orbitron', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+    clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+  }
+
+  .pyramid-layer:hover { color: var(--bg); filter: brightness(1.2); }
+
+  .pyramid-layer.e2e { width: 40%; height: 44px; background: linear-gradient(135deg, #ff335533, #ff335566); border: 1px solid #ff3355; color: #ff8899; }
+  .pyramid-layer.integration { width: 65%; height: 44px; background: linear-gradient(135deg, #ffaa0033, #ffaa0066); border: 1px solid #ffaa00; color: #ffcc66; }
+  .pyramid-layer.unit { width: 90%; height: 44px; background: linear-gradient(135deg, #00ff8833, #00ff8866); border: 1px solid var(--green); color: var(--green); }
+
+  .pyramid-label { font-size: 0.6rem; letter-spacing: 2px; color: var(--text-dim); text-align: center; margin-top: 0.25rem; }
+
+  /* ===== METHODOLOGY TABS ===== */
+  .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid var(--border); }
+
+  .tab {
+    flex: 1; padding: 0.5rem; font-size: 0.65rem;
+    letter-spacing: 2px; text-align: center;
+    background: none; border: none; border-right: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .tab:last-child { border-right: none; }
+  .tab.active, .tab:hover { color: var(--green); background: rgba(0,255,136,0.05); }
+
+  .tab-content { display: none; animation: fadeIn 0.3s; }
+  .tab-content.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== METRIC BARS ===== */
+  .metric-bar { margin-bottom: 1rem; }
+  .metric-top { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 0.4rem; }
+  .metric-name { color: var(--text-dim); letter-spacing: 1px; }
+  .metric-val { color: var(--green); font-family: 'Orbitron', monospace; font-size: 0.65rem; }
+  .bar-track { height: 4px; background: var(--bg3); position: relative; }
+  .bar-fill {
+    height: 100%; position: absolute; top: 0; left: 0;
+    background: linear-gradient(90deg, var(--green-dim), var(--green));
+    box-shadow: 0 0 8px rgba(0,255,136,0.4);
+    transition: width 1.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .bar-fill.amber { background: linear-gradient(90deg, #cc8800, #ffaa00); box-shadow: 0 0 8px rgba(255,170,0,0.4); }
+  .bar-fill.red { background: linear-gradient(90deg, #cc1133, #ff3355); box-shadow: 0 0 8px rgba(255,51,85,0.4); }
+
+  /* ===== FULL WIDTH PANEL ===== */
+  .full-width {
+    grid-column: 1 / -1;
+    border-right: none !important;
+  }
+
+  .two-thirds {
+    grid-column: 1 / 3;
+  }
+
+  .one-third {
+    grid-column: 3 / 4;
+  }
+
+  /* ===== TEST TYPES GRID ===== */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+
+  .type-card {
+    border: 1px solid var(--border);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .type-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 2px;
+    background: var(--green);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+
+  .type-card:hover { border-color: var(--green); background: rgba(0,255,136,0.03); }
+  .type-card:hover::before { transform: scaleX(1); }
+
+  .type-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
+  .type-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 0.3rem;
+  }
+  .type-desc { font-size: 0.65rem; color: var(--text-dim); line-height: 1.5; }
+
+  /* ===== BUG REPORT TEMPLATE ===== */
+  .bug-form { display: grid; gap: 0.75rem; }
+
+  .field-label {
+    font-size: 0.65rem; letter-spacing: 2px;
+    color: var(--green-dim); text-transform: uppercase;
+    margin-bottom: 0.3rem; display: block;
+  }
+
+  .field-input {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem; padding: 0.5rem 0.75rem;
+    outline: none; transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: var(--green); }
+  .field-input::placeholder { color: var(--text-dim); }
+
+  .field-select {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem; padding: 0.5rem 0.75rem;
+    outline: none; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2300ff88'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+  }
+
+  .btn {
+    background: var(--green);
+    color: var(--bg);
+    border: none;
+    padding: 0.6rem 1.5rem;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    background: #00cc66;
+    box-shadow: 0 0 20px rgba(0,255,136,0.3);
+    transform: translateY(-1px);
+  }
+
+  /* ===== PROCESS FLOW ===== */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .flow-step {
+    flex-shrink: 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 80px;
+  }
+
+  .flow-step:hover { border-color: var(--green); background: rgba(0,255,136,0.05); }
+
+  .flow-step-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    color: var(--green);
+    margin-bottom: 0.25rem;
+  }
+  .flow-step-name {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+
+  .flow-arrow {
+    color: var(--green-dark);
+    font-size: 1.2rem;
+    padding: 0 0.25rem;
+    flex-shrink: 0;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    position: relative; z-index: 10;
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  .footer-links { display: flex; gap: 2rem; }
+  .footer-links a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--green); }
+
+  /* ===== TOOLTIP ===== */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    color: var(--green);
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--green-dark); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+
+  /* ===== GLITCH ===== */
+  @keyframes glitch {
+    0%, 90%, 100% { clip-path: none; transform: none; }
+    92% { clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); transform: translateX(-3px); }
+    94% { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); transform: translateX(3px); }
+    96% { clip-path: polygon(0 10%, 100% 10%, 100% 30%, 0 30%); transform: translateX(-2px); }
+  }
+
+  .hero-title { animation: glitch 6s infinite; }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr 1fr; }
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    .two-thirds, .one-third { grid-column: auto; }
+    .type-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">QA<span>//</span>HUB</div>
+  <nav>
+    <a href="#testing" class="active">TESTING</a>
+    <a href="#metrics">METRICS</a>
+    <a href="#bugs">BUGS</a>
+    <a href="#tools">TOOLS</a>
+  </nav>
+  <div class="status-bar">
+    <span><span class="status-dot"></span>SYSTEM ONLINE</span>
+    <span id="clock"></span>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">// SOFTWARE QUALITY ASSURANCE COMMAND CENTER</div>
+  <h1 class="hero-title">BUG<span class="slash">/</span>HUNT</h1>
+  <div class="hero-sub">FIND IT. LOG IT. SQUASH IT. SHIP IT.</div>
+  <div class="terminal-prompt">initializing qa_suite --env=production --coverage=100%<span class="cursor"></span></div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat" data-tip="Test scenarios documented">
+    <div class="stat-num" id="s1">0</div>
+    <div class="stat-label">// test cases</div>
+  </div>
+  <div class="stat" data-tip="Unique defect types catalogued">
+    <div class="stat-num" id="s2">0</div>
+    <div class="stat-label">// bug patterns</div>
+  </div>
+  <div class="stat" data-tip="Testing techniques covered">
+    <div class="stat-num" id="s3">0</div>
+    <div class="stat-label">// methodologies</div>
+  </div>
+  <div class="stat" data-tip="Automation frameworks indexed">
+    <div class="stat-num" id="s4">0</div>
+    <div class="stat-label">// frameworks</div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- TEST PLANNING CHECKLIST -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-icon">✓</div>
+      <div>
+        <div class="panel-title">Test Planning Checklist</div>
+      </div>
+      <div class="panel-tag">PHASE 01</div>
+    </div>
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Define scope & objectives</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Identify test environments</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Map functional requirements</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Write acceptance criteria</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Select test techniques</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Define entry/exit criteria</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Estimate effort & schedule</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Assign roles & responsibilities</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Risk assessment & mitigation</li>
+      <li onclick="toggleCheck(this)"><div class="check-box"></div>Prepare test data strategy</li>
+    </ul>
+  </div>
+
+  <!-- BUG SEVERITY MATRIX -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-icon">⚠</div>
+      <div>
+        <div class="panel-title">Defect Severity Matrix</div>
+      </div>
+      <div class="panel-tag">TRIAGE</div>
+    </div>
+    <div class="matrix">
+      <div class="matrix-cell critical">
+        <div class="severity-label">CRITICAL</div>
+        <div class="severity-desc">System crash, data loss, security breach. No workaround.</div>
+      </div>
+      <div class="matrix-cell high">
+        <div class="severity-label">HIGH</div>
+        <div class="severity-desc">Major feature broken. Workaround difficult or unavailable.</div>
+      </div>
+      <div class="matrix-cell medium">
+        <div class="severity-label">MEDIUM</div>
+        <div class="severity-desc">Feature partially broken. Workaround exists.</div>
+      </div>
+      <div class="matrix-cell low">
+        <div class="severity-label">LOW</div>
+        <div class="severity-desc">Cosmetic or minor UX issue. Does not impact functionality.</div>
+      </div>
+    </div>
+    <div style="margin-top:1.25rem;">
+      <div class="panel-title" style="margin-bottom:0.75rem; font-size:0.6rem; color:var(--text-dim);">PRIORITY MAPPING</div>
+      <div class="metric-bar"><div class="metric-top"><span class="metric-name">CRITICAL → Fix immediately (P0)</span><span class="metric-val" style="color:#ff3355">BLOCKER</span></div></div>
+      <div class="metric-bar"><div class="metric-top"><span class="metric-name">HIGH → Fix in current sprint (P1)</span><span class="metric-val" style="color:#ff6600">URGENT</span></div></div>
+      <div class="metric-bar"><div class="metric-top"><span class="metric-name">MEDIUM → Fix in next sprint (P2)</span><span class="metric-val" style="color:#ffaa00">NORMAL</span></div></div>
+      <div class="metric-bar"><div class="metric-top"><span class="metric-name">LOW → Backlog / nice to fix (P3)</span><span class="metric-val" style="color:#00aaff">MINOR</span></div></div>
+    </div>
+  </div>
+
+  <!-- TEST PYRAMID -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-icon">△</div>
+      <div><div class="panel-title">Testing Pyramid</div></div>
+      <div class="panel-tag">STRATEGY</div>
+    </div>
+    <div class="pyramid">
+      <div class="pyramid-layer e2e">E2E</div>
+      <div class="pyramid-label" style="font-size:0.55rem; color:#ff8899">Slow · Expensive · Few</div>
+      <div class="pyramid-layer integration">INTEGRATION</div>
+      <div class="pyramid-label" style="font-size:0.55rem; color:#ffcc66">Medium speed · Service-level</div>
+      <div class="pyramid-layer unit">UNIT TESTS</div>
+      <div class="pyramid-label" style="font-size:0.55rem; color:var(--green-dim)">Fast · Cheap · Many</div>
+    </div>
+    <div style="font-size:0.68rem; color:var(--text-dim); line-height:1.7; margin-top:0.75rem; border-top:1px solid var(--border); padding-top:0.75rem;">
+      <span style="color:var(--green)">Rule of thumb:</span> 70% unit / 20% integration / 10% E2E. Invert the pyramid and you'll have a flaky, slow test suite.
+    </div>
+  </div>
+
+  <!-- AUTOMATION CODE SNIPPET -->
+  <div class="panel two-thirds">
+    <div class="panel-header">
+      <div class="panel-icon">&lt;/&gt;</div>
+      <div><div class="panel-title">Automation Snippet — Playwright (TypeScript)</div></div>
+      <div class="panel-tag">CODE</div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('playwright')">PLAYWRIGHT</button>
+      <button class="tab" onclick="switchTab('cypress')">CYPRESS</button>
+      <button class="tab" onclick="switchTab('selenium')">SELENIUM</button>
+      <button class="tab" onclick="switchTab('jest')">JEST</button>
+    </div>
+    <div id="playwright" class="tab-content active">
+      <div class="code-block">
+<span class="cm">// Playwright E2E — Login flow with assertions</span>
+<span class="kw">import</span> { <span class="fn">test</span>, <span class="fn">expect</span> } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+
+<span class="fn">test</span>.<span class="fn">describe</span>(<span class="str">'Authentication'</span>, () => {
+  <span class="fn">test</span>(<span class="str">'valid login navigates to dashboard'</span>, <span class="kw">async</span> ({ <span class="var">page</span> }) => {
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">goto</span>(<span class="str">'/login'</span>);
+
+    <span class="cm">// Fill credentials</span>
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="email"]'</span>, <span class="str">'qa@example.com'</span>);
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="password"]'</span>, <span class="str">'SecurePass123!'</span>);
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">click</span>(<span class="str">'[data-testid="submit"]'</span>);
+
+    <span class="cm">// Assert successful navigation</span>
+    <span class="kw">await</span> <span class="fn">expect</span>(<span class="var">page</span>).<span class="fn">toHaveURL</span>(<span class="str">'/dashboard'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(<span class="var">page</span>.<span class="fn">locator</span>(<span class="str">'h1'</span>)).<span class="fn">toContainText</span>(<span class="str">'Welcome'</span>);
+  });
+
+  <span class="fn">test</span>(<span class="str">'invalid login shows error'</span>, <span class="kw">async</span> ({ <span class="var">page</span> }) => {
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">goto</span>(<span class="str">'/login'</span>);
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="email"]'</span>, <span class="str">'wrong@email.com'</span>);
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="password"]'</span>, <span class="str">'badpass'</span>);
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">click</span>(<span class="str">'[data-testid="submit"]'</span>);
+
+    <span class="kw">await</span> <span class="fn">expect</span>(<span class="var">page</span>.<span class="fn">locator</span>(<span class="str">'.error-msg'</span>)).<span class="fn">toBeVisible</span>();
+  });
+});
+      </div>
+    </div>
+    <div id="cypress" class="tab-content">
+      <div class="code-block">
+<span class="cm">// Cypress — API + UI integration test</span>
+<span class="fn">describe</span>(<span class="str">'Cart functionality'</span>, () => {
+  <span class="fn">beforeEach</span>(() => {
+    <span class="cm">// Seed state via API — faster than UI setup</span>
+    <span class="var">cy</span>.<span class="fn">request</span>(<span class="str">'POST'</span>, <span class="str">'/api/test/seed'</span>, { <span class="var">userId</span>: <span class="num">42</span> });
+    <span class="var">cy</span>.<span class="fn">visit</span>(<span class="str">'/shop'</span>);
+  });
+
+  <span class="fn">it</span>(<span class="str">'adds item and updates cart count'</span>, () => {
+    <span class="var">cy</span>.<span class="fn">get</span>(<span class="str">'[data-cy="add-to-cart"]'</span>).<span class="fn">first</span>().<span class="fn">click</span>();
+    <span class="var">cy</span>.<span class="fn">get</span>(<span class="str">'[data-cy="cart-count"]'</span>).<span class="fn">should</span>(<span class="str">'eq'</span>, <span class="str">'1'</span>);
+    <span class="var">cy</span>.<span class="fn">get</span>(<span class="str">'[data-cy="cart-total"]'</span>).<span class="fn">should</span>(<span class="str">'not.be.empty'</span>);
+  });
+});
+      </div>
+    </div>
+    <div id="selenium" class="tab-content">
+      <div class="code-block">
+<span class="cm"># Selenium WebDriver — Python with Page Object Model</span>
+<span class="kw">from</span> <span class="fn">selenium</span> <span class="kw">import</span> webdriver
+<span class="kw">from</span> <span class="fn">selenium.webdriver.common.by</span> <span class="kw">import</span> By
+<span class="kw">import</span> <span class="fn">unittest</span>
+
+<span class="kw">class</span> <span class="fn">LoginPage</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>, driver):
+        <span class="var">self</span>.driver = driver
+        <span class="var">self</span>.EMAIL    = (By.ID, <span class="str">"email"</span>)
+        <span class="var">self</span>.PASSWORD = (By.ID, <span class="str">"password"</span>)
+        <span class="var">self</span>.SUBMIT   = (By.CSS_SELECTOR, <span class="str">"button[type='submit']"</span>)
+
+    <span class="kw">def</span> <span class="fn">login</span>(<span class="var">self</span>, email, password):
+        <span class="var">self</span>.driver.<span class="fn">find_element</span>(*<span class="var">self</span>.EMAIL).<span class="fn">send_keys</span>(email)
+        <span class="var">self</span>.driver.<span class="fn">find_element</span>(*<span class="var">self</span>.PASSWORD).<span class="fn">send_keys</span>(password)
+        <span class="var">self</span>.driver.<span class="fn">find_element</span>(*<span class="var">self</span>.SUBMIT).<span class="fn">click</span>()
+      </div>
+    </div>
+    <div id="jest" class="tab-content">
+      <div class="code-block">
+<span class="cm">// Jest unit test — service layer with mocks</span>
+<span class="kw">import</span> { <span class="fn">UserService</span> } <span class="kw">from</span> <span class="str">'./UserService'</span>;
+<span class="kw">import</span> { <span class="fn">mockDb</span> } <span class="kw">from</span> <span class="str">'../__mocks__/database'</span>;
+
+<span class="fn">jest</span>.<span class="fn">mock</span>(<span class="str">'../database'</span>, () => mockDb);
+
+<span class="fn">describe</span>(<span class="str">'UserService.getById'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'returns user when found'</span>, <span class="kw">async</span> () => {
+    mockDb.users.<span class="fn">findOne</span>.<span class="fn">mockResolvedValue</span>({ <span class="var">id</span>: <span class="num">1</span>, <span class="var">name</span>: <span class="str">'Alice'</span> });
+    <span class="kw">const</span> <span class="var">result</span> = <span class="kw">await</span> UserService.<span class="fn">getById</span>(<span class="num">1</span>);
+    <span class="fn">expect</span>(<span class="var">result</span>).<span class="fn">toEqual</span>({ <span class="var">id</span>: <span class="num">1</span>, <span class="var">name</span>: <span class="str">'Alice'</span> });
+  });
+
+  <span class="fn">it</span>(<span class="str">'throws 404 when user not found'</span>, <span class="kw">async</span> () => {
+    mockDb.users.<span class="fn">findOne</span>.<span class="fn">mockResolvedValue</span>(<span class="kw">null</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(UserService.<span class="fn">getById</span>(<span class="num">99</span>)).<span class="fn">rejects</span>.<span class="fn">toThrow</span>(<span class="str">'User not found'</span>);
+  });
+});
+      </div>
+    </div>
+  </div>
+
+  <!-- METRICS PANEL -->
+  <div class="panel one-third">
+    <div class="panel-header">
+      <div class="panel-icon">▣</div>
+      <div><div class="panel-title">Quality Metrics</div></div>
+      <div class="panel-tag">KPI</div>
+    </div>
+    <div class="metric-bar">
+      <div class="metric-top"><span class="metric-name">Code Coverage</span><span class="metric-val" id="m1">87%</span></div>
+      <div class="bar-track"><div class="bar-fill" id="b1" style="width:0%"></div></div>
+    </div>
+    <div class="metric-bar">
+      <div class="metric-top"><span class="metric-name">Test Pass Rate</span><span class="metric-val" id="m2">94%</span></div>
+      <div class="bar-track"><div class="bar-fill" id="b2" style="width:0%"></div></div>
+    </div>
+    <div class="metric-bar">
+      <div class="metric-top"><span class="metric-name">Defect Escape Rate</span><span class="metric-val" id="m3" style="color:#ffaa00">12%</span></div>
+      <div class="bar-track"><div class="bar-fill amber" id="b3" style="width:0%"></div></div>
+    </div>
+    <div class="metric-bar">
+      <div class="metric-top"><span class="metric-name">Critical Bug SLA</span><span class="metric-val" id="m4" style="color:#ff3355">72%</span></div>
+      <div class="bar-track"><div class="bar-fill red" id="b4" style="width:0%"></div></div>
+    </div>
+    <div class="metric-bar">
+      <div class="metric-top"><span class="metric-name">Automation Ratio</span><span class="metric-val">68%</span></div>
+      <div class="bar-track"><div class="bar-fill" id="b5" style="width:0%"></div></div>
+    </div>
+    <div style="border-top:1px solid var(--border); margin-top:1rem; padding-top:1rem;">
+      <div class="panel-title" style="font-size:0.6rem; color:var(--text-dim); margin-bottom:0.5rem;">TARGETS</div>
+      <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.9;">
+        Coverage <span style="color:var(--green)">≥ 80%</span> · Pass Rate <span style="color:var(--green)">≥ 95%</span><br>
+        Escape Rate <span style="color:#ffaa00">≤ 5%</span> · SLA <span style="color:#ff3355">≥ 90%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTING TYPES -->
+  <div class="panel full-width">
+    <div class="panel-header">
+      <div class="panel-icon">⊞</div>
+      <div><div class="panel-title">Testing Types Reference</div></div>
+      <div class="panel-tag">REFERENCE</div>
+    </div>
+    <div class="type-grid">
+      <div class="type-card"><span class="type-icon">🔬</span><div class="type-name">FUNCTIONAL</div><div class="type-desc">Validates software against requirements. Tests what the system does.</div></div>
+      <div class="type-card"><span class="type-icon">⚡</span><div class="type-name">PERFORMANCE</div><div class="type-desc">Load, stress, spike & endurance testing. Measures speed, stability, and scalability.</div></div>
+      <div class="type-card"><span class="type-icon">🔐</span><div class="type-name">SECURITY</div><div class="type-desc">Pen testing, OWASP checks, auth testing. Finds vulnerabilities before attackers do.</div></div>
+      <div class="type-card"><span class="type-icon">♿</span><div class="type-name">ACCESSIBILITY</div><div class="type-desc">WCAG compliance, screen reader compatibility, keyboard navigation.</div></div>
+      <div class="type-card"><span class="type-icon">📱</span><div class="type-name">COMPATIBILITY</div><div class="type-desc">Cross-browser, cross-device, cross-OS testing. Ensures consistent experience.</div></div>
+      <div class="type-card"><span class="type-icon">🔄</span><div class="type-name">REGRESSION</div><div class="type-desc">Verifies new changes don't break existing functionality. Run after every build.</div></div>
+      <div class="type-card"><span class="type-icon">💨</span><div class="type-name">SMOKE</div><div class="type-desc">Quick sanity check on critical paths. First gate before deeper testing.</div></div>
+      <div class="type-card"><span class="type-icon">🤝</span><div class="type-name">UAT</div><div class="type-desc">End-users validate the system meets business needs before go-live.</div></div>
+    </div>
+  </div>
+
+  <!-- BUG REPORT TEMPLATE -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-icon">🐛</div>
+      <div><div class="panel-title">Bug Report Template</div></div>
+      <div class="panel-tag">TOOL</div>
+    </div>
+    <div class="bug-form">
+      <div>
+        <label class="field-label">Bug Title</label>
+        <input class="field-input" placeholder="[Component] Short description of issue" />
+      </div>
+      <div>
+        <label class="field-label">Severity</label>
+        <select class="field-select">
+          <option>Critical — System breaking</option>
+          <option>High — Major feature broken</option>
+          <option>Medium — Partial functionality</option>
+          <option>Low — Cosmetic / minor</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Environment</label>
+        <input class="field-input" placeholder="OS · Browser · Version · Build #" />
+      </div>
+      <div>
+        <label class="field-label">Steps to Reproduce</label>
+        <input class="field-input" placeholder="1. Navigate to... 2. Click... 3. Observe..." />
+      </div>
+      <div>
+        <label class="field-label">Expected vs Actual</label>
+        <input class="field-input" placeholder="Expected: X | Actual: Y" />
+      </div>
+      <button class="btn" onclick="copyBugReport()">COPY TEMPLATE →</button>
+    </div>
+  </div>
+
+  <!-- SDLC PROCESS -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-icon">⟳</div>
+      <div><div class="panel-title">QA in SDLC</div></div>
+      <div class="panel-tag">PROCESS</div>
+    </div>
+    <div class="flow">
+      <div class="flow-step"><div class="flow-step-num">01</div><div class="flow-step-name">PLAN</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-step-num">02</div><div class="flow-step-name">DESIGN</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-step-num">03</div><div class="flow-step-name">DEVELOP</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-step-num">04</div><div class="flow-step-name">TEST</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-step-num">05</div><div class="flow-step-name">DEPLOY</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-step-num">06</div><div class="flow-step-name">MONITOR</div></div>
+    </div>
+    <div style="margin-top:1.25rem;">
+      <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.9;">
+        QA isn't a phase — it's a <span style="color:var(--green)">continuous activity</span> woven through every step.<br><br>
+        <span style="color:var(--green)">Shift Left:</span> Move testing earlier in the SDLC to catch bugs when they're cheapest to fix.<br><br>
+        <span style="color:var(--green)">Shift Right:</span> Test in production with feature flags, canary releases, and monitoring.
+      </div>
+    </div>
+    <div style="margin-top:1.25rem; border-top:1px solid var(--border); padding-top:1rem;">
+      <div class="panel-title" style="font-size:0.6rem; color:var(--text-dim); margin-bottom:0.75rem;">COST OF FIXING BUGS BY PHASE</div>
+      <div class="metric-bar">
+        <div class="metric-top"><span class="metric-name">Requirements phase</span><span class="metric-val">$1x</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:5%"></div></div>
+      </div>
+      <div class="metric-bar">
+        <div class="metric-top"><span class="metric-name">Design phase</span><span class="metric-val">$5x</span></div>
+        <div class="bar-track"><div class="bar-fill amber" style="width:25%"></div></div>
+      </div>
+      <div class="metric-bar">
+        <div class="metric-top"><span class="metric-name">Development phase</span><span class="metric-val">$10x</span></div>
+        <div class="bar-track"><div class="bar-fill amber" style="width:50%"></div></div>
+      </div>
+      <div class="metric-bar">
+        <div class="metric-top"><span class="metric-name">Production</span><span class="metric-val" style="color:#ff3355">$100x</span></div>
+        <div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLS REFERENCE -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-icon">⚙</div>
+      <div><div class="panel-title">Essential QA Tools</div></div>
+      <div class="panel-tag">TOOLS</div>
+    </div>
+    <div style="display:grid; gap:0.5rem;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+        <div style="border:1px solid var(--border); padding:0.75rem;">
+          <div style="font-family:'Orbitron',monospace; font-size:0.55rem; letter-spacing:2px; color:var(--green); margin-bottom:0.5rem;">AUTOMATION</div>
+          <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.8;">
+            Playwright<br>Cypress<br>Selenium<br>Appium<br>WebdriverIO
+          </div>
+        </div>
+        <div style="border:1px solid var(--border); padding:0.75rem;">
+          <div style="font-family:'Orbitron',monospace; font-size:0.55rem; letter-spacing:2px; color:#ffaa00; margin-bottom:0.5rem;">BUG TRACKING</div>
+          <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.8;">
+            Jira<br>Linear<br>GitHub Issues<br>Azure DevOps<br>Notion
+          </div>
+        </div>
+        <div style="border:1px solid var(--border); padding:0.75rem;">
+          <div style="font-family:'Orbitron',monospace; font-size:0.55rem; letter-spacing:2px; color:#00aaff; margin-bottom:0.5rem;">PERFORMANCE</div>
+          <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.8;">
+            k6<br>JMeter<br>Gatling<br>Lighthouse<br>Artillery
+          </div>
+        </div>
+        <div style="border:1px solid var(--border); padding:0.75rem;">
+          <div style="font-family:'Orbitron',monospace; font-size:0.55rem; letter-spacing:2px; color:#ff3355; margin-bottom:0.5rem;">API TESTING</div>
+          <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.8;">
+            Postman<br>Insomnia<br>REST Assured<br>Pact (contract)<br>Supertest
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-grid -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo" style="font-size:0.8rem;">QA<span>//</span>HUB</div>
+  <div class="footer-links">
+    <a href="#">DOCUMENTATION</a>
+    <a href="#">CONTRIBUTE</a>
+    <a href="#">CHANGELOG</a>
+    <a href="#">CONTACT</a>
+  </div>
+  <div>// BUILD FOR QUALITY · SHIP WITH CONFIDENCE</div>
+</footer>
+
+<script>
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toISOString().replace('T',' ').slice(0,19) + ' UTC';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Animated counters
+  function animateCounter(id, target) {
+    let current = 0;
+    const step = Math.ceil(target / 40);
+    const el = document.getElementById(id);
+    const interval = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = current;
+      if (current >= target) clearInterval(interval);
+    }, 40);
+  }
+  setTimeout(() => {
+    animateCounter('s1', 248);
+    animateCounter('s2', 73);
+    animateCounter('s3', 12);
+    animateCounter('s4', 9);
+  }, 500);
+
+  // Animate bars
+  setTimeout(() => {
+    document.getElementById('b1').style.width = '87%';
+    document.getElementById('b2').style.width = '94%';
+    document.getElementById('b3').style.width = '12%';
+    document.getElementById('b4').style.width = '72%';
+    document.getElementById('b5').style.width = '68%';
+  }, 800);
+
+  // Checklist toggle
+  function toggleCheck(li) {
+    li.classList.toggle('done');
+    const box = li.querySelector('.check-box');
+    if (li.classList.contains('done')) {
+      box.classList.add('checked');
+      box.textContent = '✓';
+    } else {
+      box.classList.remove('checked');
+      box.textContent = '';
+    }
+  }
+
+  // Tab switching
+  function switchTab(id) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Copy bug report
+  function copyBugReport() {
+    const title = document.querySelectorAll('.field-input')[0].value || '[Component] Short description';
+    const severity = document.querySelector('.field-select').value;
+    const env = document.querySelectorAll('.field-input')[1].value || 'OS · Browser · Version';
+    const steps = document.querySelectorAll('.field-input')[2].value || 'Steps to reproduce';
+    const expected = document.querySelectorAll('.field-input')[3].value || 'Expected: | Actual:';
+    const template = `**Bug Report**\n\nTitle: ${title}\nSeverity: ${severity}\nEnvironment: ${env}\n\nSteps to Reproduce:\n${steps}\n\n${expected}\n\nAttachments: [screenshots / video / logs]`;
+    navigator.clipboard.writeText(template).then(() => {
+      const btn = document.querySelector('.btn');
+      btn.textContent = 'COPIED ✓';
+      btn.style.background = '#004422';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => { btn.textContent = 'COPY TEMPLATE →'; btn.style.background = ''; btn.style.color = ''; }, 2000);
+    });
+  }
+
+  // Nav smooth scroll highlight
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelectorAll('nav a');
+    nav.forEach(a => a.classList.remove('active'));
+    nav[0].classList.add('active');
+  });
+</script>
+</body>
+</html>
