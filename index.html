@@ -276,7 +276,93 @@
     color: var(--text-dim);
   }
 
-  /* ===== CHECKLIST ===== */
+  /* ===== DRAG AND DROP ===== */
+  .panel {
+    transition: background 0.3s, opacity 0.2s, transform 0.2s;
+  }
+
+  .panel.dragging {
+    opacity: 0.35;
+    transform: scale(0.98);
+    border: 1px dashed var(--green) !important;
+    background: rgba(0,255,136,0.04) !important;
+  }
+
+  .panel.drag-over {
+    background: rgba(0,255,136,0.08) !important;
+    border: 1px solid var(--green) !important;
+    box-shadow: inset 0 0 20px rgba(0,255,136,0.06);
+  }
+
+  .drag-handle {
+    width: 20px; height: 20px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    cursor: grab;
+    flex-shrink: 0;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+    padding: 2px;
+  }
+
+  .drag-handle:active { cursor: grabbing; }
+
+  .panel-header:hover .drag-handle { opacity: 1; }
+
+  .drag-handle span {
+    display: block;
+    width: 12px; height: 1.5px;
+    background: var(--green);
+  }
+
+  /* ===== PANEL TOGGLE ===== */
+  .panel-header {
+    cursor: default;
+    user-select: none;
+  }
+
+  .panel-toggle {
+    margin-left: auto;
+    width: 22px; height: 22px;
+    border: 1px solid var(--green-dark);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim);
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .panel-header:hover .panel-toggle {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .panel.collapsed .panel-toggle {
+    transform: rotate(-90deg);
+  }
+
+  .panel-body {
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .panel.collapsed .panel-body {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .panel.collapsed {
+    padding-bottom: 0;
+  }
+
+  .panel.collapsed .panel-header {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
   .checklist { list-style: none; }
   .checklist li {
     display: flex;
@@ -1418,7 +1504,167 @@
     });
   }
 
-  // ===== DOC LINKS =====
+  // ===== PANEL TOGGLES + DRAG HANDLES =====
+  document.querySelectorAll('.panel').forEach(panel => {
+    const header = panel.querySelector('.panel-header');
+    if (!header) return;
+
+    // Wrap content in .panel-body
+    const body = document.createElement('div');
+    body.className = 'panel-body';
+    const children = Array.from(panel.childNodes).filter(n => n !== header);
+    children.forEach(c => body.appendChild(c));
+    panel.appendChild(body);
+
+    // Inject drag handle at the very start of header
+    const handle = document.createElement('div');
+    handle.className = 'drag-handle';
+    handle.title = 'Drag to reorder';
+    handle.innerHTML = '<span></span><span></span><span></span>';
+    header.insertBefore(handle, header.firstChild);
+
+    // Inject chevron toggle
+    const chevron = document.createElement('div');
+    chevron.className = 'panel-toggle';
+    chevron.innerHTML = '&#9660;';
+    chevron.title = 'Collapse / Expand';
+    const tag = header.querySelector('.panel-tag');
+    if (tag) header.insertBefore(chevron, tag);
+    else header.appendChild(chevron);
+
+    // Toggle on header click (not on handle, button, etc.)
+    header.addEventListener('click', (e) => {
+      if (e.target.closest('.drag-handle, button, a, input, select, .tab, .check-box')) return;
+      panel.classList.toggle('collapsed');
+    });
+  });
+
+  // ===== DRAG AND DROP =====
+  const grid = document.querySelector('.main-grid');
+  let dragSrc = null;
+  let placeholder = null;
+
+  function createPlaceholder(ref) {
+    const ph = document.createElement('div');
+    ph.className = 'panel';
+    ph.id = 'drag-placeholder';
+    // Match the dragged panel's grid span classes
+    ph.className = ref.className.replace('dragging','').trim();
+    ph.id = 'drag-placeholder';
+    ph.style.cssText = `
+      opacity: 0.15;
+      border: 2px dashed var(--green) !important;
+      background: rgba(0,255,136,0.04) !important;
+      min-height: ${ref.offsetHeight}px;
+      pointer-events: none;
+    `;
+    return ph;
+  }
+
+  grid.addEventListener('dragstart', (e) => {
+    const panel = e.target.closest('.panel');
+    const handle = e.target.closest('.drag-handle');
+    if (!panel || !handle) { e.preventDefault(); return; }
+
+    dragSrc = panel;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+
+    // Slight delay so browser snapshot doesn't show placeholder
+    setTimeout(() => {
+      dragSrc.classList.add('dragging');
+      placeholder = createPlaceholder(dragSrc);
+      dragSrc.parentNode.insertBefore(placeholder, dragSrc.nextSibling);
+    }, 0);
+  });
+
+  grid.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    const target = e.target.closest('.panel');
+    if (!target || target === dragSrc || target.id === 'drag-placeholder') return;
+
+    // Remove old highlights
+    grid.querySelectorAll('.panel.drag-over').forEach(p => p.classList.remove('drag-over'));
+    target.classList.add('drag-over');
+
+    // Move placeholder to indicate drop position
+    if (placeholder) {
+      const rect = target.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const midX = rect.left + rect.width / 2;
+
+      // Determine if we're in the top/left half or bottom/right half
+      if (e.clientY < midY || e.clientX < midX) {
+        grid.insertBefore(placeholder, target);
+      } else {
+        grid.insertBefore(placeholder, target.nextSibling);
+      }
+    }
+  });
+
+  grid.addEventListener('dragleave', (e) => {
+    const target = e.target.closest('.panel');
+    if (target) target.classList.remove('drag-over');
+  });
+
+  grid.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (!dragSrc || !placeholder) return;
+
+    grid.querySelectorAll('.panel.drag-over').forEach(p => p.classList.remove('drag-over'));
+
+    // Insert dragSrc where the placeholder is
+    grid.insertBefore(dragSrc, placeholder);
+    placeholder.remove();
+    placeholder = null;
+
+    dragSrc.classList.remove('dragging');
+    dragSrc = null;
+
+    // Re-apply border rules since nth-child changed
+    fixBorders();
+  });
+
+  grid.addEventListener('dragend', () => {
+    if (placeholder) { placeholder.remove(); placeholder = null; }
+    if (dragSrc) { dragSrc.classList.remove('dragging'); dragSrc = null; }
+    grid.querySelectorAll('.panel.drag-over').forEach(p => p.classList.remove('drag-over'));
+    fixBorders();
+  });
+
+  // Make drag handles actually draggable (the panel itself is the draggable el)
+  document.querySelectorAll('.drag-handle').forEach(handle => {
+    handle.addEventListener('mousedown', () => {
+      handle.closest('.panel').setAttribute('draggable', 'true');
+    });
+    handle.addEventListener('mouseleave', () => {
+      // Only remove draggable if not mid-drag
+      if (!dragSrc) handle.closest('.panel').removeAttribute('draggable');
+    });
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragSrc) {
+      document.querySelectorAll('.panel[draggable]').forEach(p => p.removeAttribute('draggable'));
+    }
+  });
+
+  function fixBorders() {
+    // Reset and reapply border-right based on actual position in grid (3 cols)
+    const panels = Array.from(grid.querySelectorAll('.panel:not(#drag-placeholder)'));
+    panels.forEach((p, i) => {
+      // Full-width panels never have right border
+      if (p.classList.contains('full-width')) {
+        p.style.borderRight = 'none';
+      } else {
+        // Count non-full-width panels in sequence to determine column
+        const col = (i % 3) + 1;
+        p.style.borderRight = col === 3 ? 'none' : '1px solid var(--border)';
+      }
+    });
+  }
   const docLinks = {};
 
   function handleDocClick(id) {
@@ -1553,6 +1799,4 @@
 </script>
 </body>
 </html>
-
-
 
