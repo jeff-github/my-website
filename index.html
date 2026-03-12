@@ -1563,14 +1563,12 @@
 
   grid.addEventListener('dragstart', (e) => {
     const panel = e.target.closest('.panel');
-    const handle = e.target.closest('.drag-handle');
-    if (!panel || !handle) { e.preventDefault(); return; }
+    if (!panel || !dragFromHandle) { e.preventDefault(); return; }
 
     dragSrc = panel;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', '');
 
-    // Slight delay so browser snapshot doesn't show placeholder
     setTimeout(() => {
       dragSrc.classList.add('dragging');
       placeholder = createPlaceholder(dragSrc);
@@ -1635,21 +1633,18 @@
   });
 
   // Make drag handles actually draggable (the panel itself is the draggable el)
-  document.querySelectorAll('.drag-handle').forEach(handle => {
-    handle.addEventListener('mousedown', () => {
-      handle.closest('.panel').setAttribute('draggable', 'true');
-    });
-    handle.addEventListener('mouseleave', () => {
-      // Only remove draggable if not mid-drag
-      if (!dragSrc) handle.closest('.panel').removeAttribute('draggable');
-    });
+  // Set draggable permanently on all panels; dragstart checks handle flag
+  let dragFromHandle = false;
+
+  document.querySelectorAll('.main-grid .panel').forEach(p => {
+    p.setAttribute('draggable', 'true');
   });
 
-  document.addEventListener('mouseup', () => {
-    if (!dragSrc) {
-      document.querySelectorAll('.panel[draggable]').forEach(p => p.removeAttribute('draggable'));
-    }
+  document.querySelectorAll('.drag-handle').forEach(handle => {
+    handle.addEventListener('pointerdown', () => { dragFromHandle = true; });
   });
+
+  document.addEventListener('pointerup', () => { dragFromHandle = false; });
 
   function fixBorders() {
     // Reset and reapply border-right based on actual position in grid (3 cols)
