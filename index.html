@@ -692,6 +692,26 @@
     transform: translateX(4px);
   }
 
+  .doc-delete {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 20px; height: 20px;
+    background: var(--bg);
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-size: 0.65rem;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .doc-link:hover .doc-delete { opacity: 1; }
+  .doc-delete:hover { background: var(--red); color: var(--bg); transform: scale(1.15); }
+
   .doc-add {
     display: flex;
     align-items: center;
@@ -1428,7 +1448,44 @@
 
   const linkCounters = { testplan: 0, testcases: 0, other: 0 };
 
-  function saveLink(section, nameInputId, urlInputId) {
+  function removeLink(e, cardId) {
+    e.preventDefault();
+    e.stopPropagation();
+    const anchor = document.getElementById(cardId);
+    if (!anchor) return;
+
+    const section = cardId.startsWith('testplan') ? 'testplan' :
+                    cardId.startsWith('testcases') ? 'testcases' : 'other';
+
+    const isPlaceholder = ['testplan-main','testplan-sprint','testcases-main',
+                           'testcases-regression','other-bugreport','other-testreport'].includes(cardId);
+
+    if (isPlaceholder) {
+      // Reset placeholder back to default state
+      const defaults = {
+        'testplan-main':        { name: 'TEST PLAN — MAIN',      meta: 'Click to set link · Notion / Google Docs / Confluence', icon: '📋' },
+        'testplan-sprint':      { name: 'SPRINT TEST PLAN',       meta: 'Click to set link · Notion / Google Docs / Confluence', icon: '📋' },
+        'testcases-main':       { name: 'TEST CASES — MASTER',   meta: 'Click to set link · Notion / Google Sheets / Xray',     icon: '🧪' },
+        'testcases-regression': { name: 'REGRESSION SUITE',       meta: 'Click to set link · Notion / Google Sheets / Xray',     icon: '🔁' },
+        'other-bugreport':      { name: 'BUG TRACKER',            meta: 'Click to set link · Jira / Linear / Notion',            icon: '🐛' },
+        'other-testreport':     { name: 'TEST REPORT',            meta: 'Click to set link · Notion / Confluence / PDF',         icon: '📊' },
+      };
+      const d = defaults[cardId];
+      anchor.href = '#';
+      document.getElementById(cardId + '-name').textContent = d.name;
+      document.getElementById(cardId + '-meta').textContent = d.meta;
+      anchor.querySelector('.doc-icon').textContent = d.icon;
+      anchor.querySelector('.doc-delete').remove();
+      delete docLinks[cardId];
+    } else {
+      // Dynamically added card — remove it entirely
+      anchor.style.opacity = '0';
+      anchor.style.transform = 'translateX(10px)';
+      anchor.style.transition = 'all 0.25s';
+      setTimeout(() => anchor.remove(), 250);
+      delete docLinks[cardId];
+    }
+  }
     const nameVal = document.getElementById(nameInputId).value.trim();
     const urlVal  = document.getElementById(urlInputId).value.trim();
     if (!urlVal) {
@@ -1454,6 +1511,12 @@
         document.getElementById(cardId + '-meta').textContent = hostname + ' · Linked ✓';
         anchor.style.borderColor = 'var(--green-dim)';
         setTimeout(() => anchor.style.borderColor = '', 2000);
+        // Add delete button
+        const del = document.createElement('span');
+        del.className = 'doc-delete';
+        del.innerHTML = '✕';
+        del.onclick = (e) => removeLink(e, cardId);
+        anchor.appendChild(del);
         updated = true;
         break;
       }
@@ -1476,7 +1539,8 @@
           <div class="doc-name">${displayName.toUpperCase()}</div>
           <div class="doc-meta">${hostname} · Linked ✓</div>
         </div>
-        <div class="doc-arrow">→</div>`;
+        <div class="doc-arrow">→</div>
+        <span class="doc-delete" onclick="removeLink(event,'${newId}')">✕</span>`;
       container.appendChild(card);
     }
     document.getElementById(nameInputId).value = '';
@@ -1488,5 +1552,4 @@
 </body>
 </html>
 
-</body>
-</html>
+
