@@ -611,6 +611,156 @@
     pointer-events: none;
   }
 
+  /* ===== DOC LINKS ===== */
+  .doc-links { display: grid; gap: 0.75rem; }
+
+  .doc-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    background: rgba(0,255,136,0.02);
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .doc-link::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 3px; height: 100%;
+    background: var(--green);
+    transform: scaleY(0);
+    transition: transform 0.25s;
+    transform-origin: bottom;
+  }
+
+  .doc-link:hover {
+    border-color: var(--green);
+    background: rgba(0,255,136,0.06);
+    transform: translateX(4px);
+  }
+
+  .doc-link:hover::before { transform: scaleY(1); }
+
+  .doc-icon {
+    width: 40px; height: 40px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    transition: border-color 0.25s;
+  }
+
+  .doc-link:hover .doc-icon { border-color: var(--green); }
+
+  .doc-info { flex: 1; min-width: 0; }
+
+  .doc-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s;
+  }
+
+  .doc-link:hover .doc-name { color: var(--green); }
+
+  .doc-meta {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .doc-arrow {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .doc-link:hover .doc-arrow {
+    color: var(--green);
+    transform: translateX(4px);
+  }
+
+  .doc-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: none;
+    width: 100%;
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+  }
+
+  .doc-add:hover {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(0,255,136,0.03);
+  }
+
+  .doc-url-input {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem; padding: 0.5rem 0.75rem;
+    outline: none; transition: border-color 0.2s;
+    display: none;
+    margin-top: 0.5rem;
+  }
+
+  .doc-url-input:focus { border-color: var(--green); }
+
+  .doc-url-form { display: none; padding: 1rem; border: 1px solid var(--border); background: var(--bg2); }
+  .doc-url-form.open { display: block; }
+  .doc-url-form-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+  .doc-url-form input {
+    flex: 1; background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem; padding: 0.4rem 0.75rem;
+    outline: none;
+  }
+  .doc-url-form input:focus { border-color: var(--green); }
+  .doc-url-form input::placeholder { color: var(--text-dim); }
+  .doc-url-form label {
+    font-size: 0.6rem; letter-spacing: 2px;
+    color: var(--green-dim); display: block; margin-bottom: 0.25rem;
+    text-transform: uppercase;
+  }
+  .doc-save-btn {
+    background: var(--green); color: var(--bg);
+    border: none; padding: 0.4rem 1rem;
+    font-family: 'Orbitron', monospace; font-size: 0.6rem;
+    letter-spacing: 2px; cursor: pointer; font-weight: 700;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .doc-save-btn:hover { background: #00cc66; }
+  .doc-cancel-btn {
+    background: none; color: var(--text-dim);
+    border: 1px solid var(--border); padding: 0.4rem 0.75rem;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .doc-cancel-btn:hover { border-color: var(--red); color: var(--red); }
+
   /* ===== SCROLLBAR ===== */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
@@ -651,6 +801,7 @@
     <a href="#metrics">METRICS</a>
     <a href="#bugs">BUGS</a>
     <a href="#tools">TOOLS</a>
+    <a href="#docs">DOCS</a>
   </nav>
   <div class="status-bar">
     <span><span class="status-dot"></span>SYSTEM ONLINE</span>
@@ -791,7 +942,7 @@
     <span class="kw">await</span> <span class="var">page</span>.<span class="fn">goto</span>(<span class="str">'/login'</span>);
 
     <span class="cm">// Fill credentials</span>
-    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="email"]'</span>, <span class="str">'qa@example.com'</span>);
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="email"]'</span>, <span class="str">'<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c5b4a485a0bda4a8b5a9a0eba6aaa8">[email&#160;protected]</a>'</span>);
     <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="password"]'</span>, <span class="str">'SecurePass123!'</span>);
     <span class="kw">await</span> <span class="var">page</span>.<span class="fn">click</span>(<span class="str">'[data-testid="submit"]'</span>);
 
@@ -802,7 +953,7 @@
 
   <span class="fn">test</span>(<span class="str">'invalid login shows error'</span>, <span class="kw">async</span> ({ <span class="var">page</span> }) => {
     <span class="kw">await</span> <span class="var">page</span>.<span class="fn">goto</span>(<span class="str">'/login'</span>);
-    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="email"]'</span>, <span class="str">'wrong@email.com'</span>);
+    <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="email"]'</span>, <span class="str">'<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6413160b0a03240109050d084a070b09">[email&#160;protected]</a>'</span>);
     <span class="kw">await</span> <span class="var">page</span>.<span class="fn">fill</span>(<span class="str">'[data-testid="password"]'</span>, <span class="str">'badpass'</span>);
     <span class="kw">await</span> <span class="var">page</span>.<span class="fn">click</span>(<span class="str">'[data-testid="submit"]'</span>);
 
@@ -1050,6 +1201,114 @@
     </div>
   </div>
 
+  <!-- DOCUMENTS PANEL -->
+  <div class="panel full-width" id="docs">
+    <div class="panel-header">
+      <div class="panel-icon">📁</div>
+      <div><div class="panel-title">Project Documents</div></div>
+      <div class="panel-tag">LINKED</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+
+      <!-- Test Plan -->
+      <div>
+        <div style="font-size:0.6rem; letter-spacing:3px; color:var(--text-dim); margin-bottom:0.75rem; text-transform:uppercase;">// Test Plan</div>
+        <div class="doc-links" id="testplan-links">
+          <a class="doc-link" id="testplan-main" href="#" target="_blank" onclick="return handleDocClick('testplan-main')">
+            <div class="doc-icon">📋</div>
+            <div class="doc-info">
+              <div class="doc-name" id="testplan-name">TEST PLAN — MAIN</div>
+              <div class="doc-meta" id="testplan-meta">Click to set link &nbsp;·&nbsp; Notion / Google Docs / Confluence</div>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+          <a class="doc-link" id="testplan-sprint" href="#" target="_blank" onclick="return handleDocClick('testplan-sprint')">
+            <div class="doc-icon">📋</div>
+            <div class="doc-info">
+              <div class="doc-name" id="testplan-sprint-name">SPRINT TEST PLAN</div>
+              <div class="doc-meta" id="testplan-sprint-meta">Click to set link &nbsp;·&nbsp; Notion / Google Docs / Confluence</div>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+        </div>
+        <button class="doc-add" onclick="openForm('testplan-form')">+ ADD TEST PLAN LINK</button>
+        <div class="doc-url-form" id="testplan-form">
+          <div><label>Document Name</label><input id="tp-name-inp" placeholder="e.g. Sprint 12 Test Plan" /></div>
+          <div style="margin-top:0.5rem;"><label>URL</label><input id="tp-url-inp" placeholder="https://notion.so/..." /></div>
+          <div class="doc-url-form-row">
+            <button class="doc-save-btn" onclick="saveLink('testplan','tp-name-inp','tp-url-inp')">SAVE LINK</button>
+            <button class="doc-cancel-btn" onclick="closeForm('testplan-form')">CANCEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Cases -->
+      <div>
+        <div style="font-size:0.6rem; letter-spacing:3px; color:var(--text-dim); margin-bottom:0.75rem; text-transform:uppercase;">// Test Cases</div>
+        <div class="doc-links" id="testcases-links">
+          <a class="doc-link" id="testcases-main" href="#" target="_blank" onclick="return handleDocClick('testcases-main')">
+            <div class="doc-icon">🧪</div>
+            <div class="doc-info">
+              <div class="doc-name" id="testcases-name">TEST CASES — MASTER</div>
+              <div class="doc-meta" id="testcases-meta">Click to set link &nbsp;·&nbsp; Notion / Google Sheets / Xray</div>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+          <a class="doc-link" id="testcases-regression" href="#" target="_blank" onclick="return handleDocClick('testcases-regression')">
+            <div class="doc-icon">🔁</div>
+            <div class="doc-info">
+              <div class="doc-name" id="testcases-regression-name">REGRESSION SUITE</div>
+              <div class="doc-meta" id="testcases-regression-meta">Click to set link &nbsp;·&nbsp; Notion / Google Sheets / Xray</div>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+        </div>
+        <button class="doc-add" onclick="openForm('testcases-form')">+ ADD TEST CASES LINK</button>
+        <div class="doc-url-form" id="testcases-form">
+          <div><label>Document Name</label><input id="tc-name-inp" placeholder="e.g. Checkout Flow Test Cases" /></div>
+          <div style="margin-top:0.5rem;"><label>URL</label><input id="tc-url-inp" placeholder="https://notion.so/..." /></div>
+          <div class="doc-url-form-row">
+            <button class="doc-save-btn" onclick="saveLink('testcases','tc-name-inp','tc-url-inp')">SAVE LINK</button>
+            <button class="doc-cancel-btn" onclick="closeForm('testcases-form')">CANCEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Docs -->
+      <div>
+        <div style="font-size:0.6rem; letter-spacing:3px; color:var(--text-dim); margin-bottom:0.75rem; text-transform:uppercase;">// Other Docs</div>
+        <div class="doc-links" id="other-links">
+          <a class="doc-link" id="other-bugreport" href="#" target="_blank" onclick="return handleDocClick('other-bugreport')">
+            <div class="doc-icon">🐛</div>
+            <div class="doc-info">
+              <div class="doc-name" id="other-bugreport-name">BUG TRACKER</div>
+              <div class="doc-meta" id="other-bugreport-meta">Click to set link &nbsp;·&nbsp; Jira / Linear / Notion</div>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+          <a class="doc-link" id="other-testreport" href="#" target="_blank" onclick="return handleDocClick('other-testreport')">
+            <div class="doc-icon">📊</div>
+            <div class="doc-info">
+              <div class="doc-name" id="other-testreport-name">TEST REPORT</div>
+              <div class="doc-meta" id="other-testreport-meta">Click to set link &nbsp;·&nbsp; Notion / Confluence / PDF</div>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+        </div>
+        <button class="doc-add" onclick="openForm('other-form')">+ ADD DOCUMENT LINK</button>
+        <div class="doc-url-form" id="other-form">
+          <div><label>Document Name</label><input id="ot-name-inp" placeholder="e.g. QA Dashboard" /></div>
+          <div style="margin-top:0.5rem;"><label>URL</label><input id="ot-url-inp" placeholder="https://..." /></div>
+          <div class="doc-url-form-row">
+            <button class="doc-save-btn" onclick="saveLink('other','ot-name-inp','ot-url-inp')">SAVE LINK</button>
+            <button class="doc-cancel-btn" onclick="closeForm('other-form')">CANCEL</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div><!-- /main-grid -->
 
 <!-- FOOTER -->
@@ -1064,7 +1323,7 @@
   <div>// BUILD FOR QUALITY · SHIP WITH CONFIDENCE</div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // Clock
   function updateClock() {
     const now = new Date();
@@ -1139,12 +1398,95 @@
     });
   }
 
-  // Nav smooth scroll highlight
-  window.addEventListener('scroll', () => {
-    const nav = document.querySelectorAll('nav a');
-    nav.forEach(a => a.classList.remove('active'));
-    nav[0].classList.add('active');
-  });
+  // ===== DOC LINKS =====
+  const docLinks = {};
+
+  function handleDocClick(id) {
+    if (docLinks[id]) return true;
+    const col = id.startsWith('testplan') ? 'testplan' :
+                id.startsWith('testcases') ? 'testcases' : 'other';
+    openForm(col + '-form');
+    const nameEl = document.getElementById(id + '-name');
+    const nameInp = document.getElementById(
+      col === 'testplan' ? 'tp-name-inp' :
+      col === 'testcases' ? 'tc-name-inp' : 'ot-name-inp'
+    );
+    if (nameEl && nameInp) nameInp.value = nameEl.textContent.trim();
+    return false;
+  }
+
+  function openForm(formId) {
+    document.querySelectorAll('.doc-url-form').forEach(f => f.classList.remove('open'));
+    document.getElementById(formId).classList.add('open');
+    const inp = document.getElementById(formId).querySelector('input');
+    if (inp) setTimeout(() => inp.focus(), 50);
+  }
+
+  function closeForm(formId) {
+    document.getElementById(formId).classList.remove('open');
+  }
+
+  const linkCounters = { testplan: 0, testcases: 0, other: 0 };
+
+  function saveLink(section, nameInputId, urlInputId) {
+    const nameVal = document.getElementById(nameInputId).value.trim();
+    const urlVal  = document.getElementById(urlInputId).value.trim();
+    if (!urlVal) {
+      document.getElementById(urlInputId).style.borderColor = 'var(--red)';
+      setTimeout(() => document.getElementById(urlInputId).style.borderColor = '', 1500);
+      return;
+    }
+    const displayName = nameVal || urlVal;
+    const prefixes = {
+      testplan:  ['testplan-main', 'testplan-sprint'],
+      testcases: ['testcases-main', 'testcases-regression'],
+      other:     ['other-bugreport', 'other-testreport']
+    };
+    let updated = false;
+    for (const cardId of prefixes[section]) {
+      if (!docLinks[cardId]) {
+        docLinks[cardId] = urlVal;
+        const anchor = document.getElementById(cardId);
+        anchor.href = urlVal;
+        document.getElementById(cardId + '-name').textContent = displayName.toUpperCase();
+        let hostname = urlVal;
+        try { hostname = new URL(urlVal).hostname; } catch(e) {}
+        document.getElementById(cardId + '-meta').textContent = hostname + ' · Linked ✓';
+        anchor.style.borderColor = 'var(--green-dim)';
+        setTimeout(() => anchor.style.borderColor = '', 2000);
+        updated = true;
+        break;
+      }
+    }
+    if (!updated) {
+      linkCounters[section]++;
+      const newId = section + '-extra-' + linkCounters[section];
+      docLinks[newId] = urlVal;
+      const container = document.getElementById(section + '-links');
+      const card = document.createElement('a');
+      card.className = 'doc-link';
+      card.id = newId;
+      card.href = urlVal;
+      card.target = '_blank';
+      let hostname = urlVal;
+      try { hostname = new URL(urlVal).hostname; } catch(e) {}
+      card.innerHTML = `
+        <div class="doc-icon">🔗</div>
+        <div class="doc-info">
+          <div class="doc-name">${displayName.toUpperCase()}</div>
+          <div class="doc-meta">${hostname} · Linked ✓</div>
+        </div>
+        <div class="doc-arrow">→</div>`;
+      container.appendChild(card);
+    }
+    document.getElementById(nameInputId).value = '';
+    document.getElementById(urlInputId).value = '';
+    closeForm(section + '-form');
+  }
+
 </script>
+</body>
+</html>
+
 </body>
 </html>
