@@ -191,37 +191,7 @@
 
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* ===== STATS BAR ===== */
-  .stats-bar {
-    position: relative; z-index: 10;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-bottom: 1px solid var(--border);
-  }
 
-  .stat {
-    padding: 1.5rem 2rem;
-    border-right: 1px solid var(--border);
-    transition: background 0.3s;
-  }
-  .stat:hover { background: rgba(0,255,136,0.03); }
-  .stat:last-child { border-right: none; }
-
-  .stat-num {
-    font-family: 'Orbitron', monospace;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--green);
-    text-shadow: 0 0 20px rgba(0,255,136,0.4);
-  }
-
-  .stat-label {
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 0.25rem;
-  }
 
   /* ===== MAIN GRID ===== */
   .main-grid {
@@ -923,25 +893,7 @@
   <div class="terminal-prompt">initializing qa_suite --env=production --coverage=100%<span class="cursor"></span></div>
 </div>
 
-<!-- STATS BAR -->
-<div class="stats-bar">
-  <div class="stat" data-tip="Test scenarios documented">
-    <div class="stat-num" id="s1">0</div>
-    <div class="stat-label">// test cases</div>
-  </div>
-  <div class="stat" data-tip="Unique defect types catalogued">
-    <div class="stat-num" id="s2">0</div>
-    <div class="stat-label">// bug patterns</div>
-  </div>
-  <div class="stat" data-tip="Testing techniques covered">
-    <div class="stat-num" id="s3">0</div>
-    <div class="stat-label">// methodologies</div>
-  </div>
-  <div class="stat" data-tip="Automation frameworks indexed">
-    <div class="stat-num" id="s4">0</div>
-    <div class="stat-label">// frameworks</div>
-  </div>
-</div>
+
 
 <!-- MAIN GRID -->
 <div class="main-grid">
@@ -1439,23 +1391,7 @@
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Animated counters
-  function animateCounter(id, target) {
-    let current = 0;
-    const step = Math.ceil(target / 40);
-    const el = document.getElementById(id);
-    const interval = setInterval(() => {
-      current = Math.min(current + step, target);
-      el.textContent = current;
-      if (current >= target) clearInterval(interval);
-    }, 40);
-  }
-  setTimeout(() => {
-    animateCounter('s1', 248);
-    animateCounter('s2', 73);
-    animateCounter('s3', 12);
-    animateCounter('s4', 9);
-  }, 500);
+
 
   // Animate bars
   setTimeout(() => {
@@ -1794,4 +1730,6 @@
 </script>
 </body>
 </html>
+
+
 
