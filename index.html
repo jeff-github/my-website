@@ -1486,6 +1486,8 @@
       delete docLinks[cardId];
     }
   }
+
+  function saveLink(section, nameInputId, urlInputId) {
     const nameVal = document.getElementById(nameInputId).value.trim();
     const urlVal  = document.getElementById(urlInputId).value.trim();
     if (!urlVal) {
@@ -1551,5 +1553,6 @@
 </script>
 </body>
 </html>
+
 
 
